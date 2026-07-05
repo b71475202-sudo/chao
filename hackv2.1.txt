@@ -1,0 +1,82 @@
+-- 1. TẢI THƯ VIỆN GIAO DIỆN ORION
+local OrionLib = loadstring(game:HttpGet(('https://githubusercontent.com')))()
+
+-- 2. KHỞI TẠO CỬA SỔ MENU
+local Window = OrionLib:MakeWindow({
+    Name = "Block Tales: Mudroads Hub 🚗", 
+    HidePremium = false, 
+    SaveConfig = true, 
+    ConfigFolder = "BlockTalesCarGame",
+    IntroText = "Đang tải Menu Lái Xe..."
+})
+
+-- Biến điều khiển tính năng
+local InfiniteLives = false
+local AutoDrive = false
+
+-- 3. TẠO TAB CHỨC NĂNG LÁI XE
+local CarTab = Window:MakeTab({
+    Name = "Mudroads Mod",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+-- TÍNH NĂNG 1: Bất tử / Vô hạn mạng (Giữ 3 tim luôn đầy)
+CarTab:AddToggle({
+    Name = "Vô hạn mạng (God Mode)",
+    Default = false,
+    Callback = function(Value)
+        InfiniteLives = Value
+        task.spawn(function()
+            while InfiniteLives do
+                task.wait()
+                pcall(function()
+                    -- Tìm kiếm dữ liệu lưu trữ số Tim (Lives/Health) của minigame trong PlayerGui
+                    local playerGui = game:GetService("Players").LocalPlayer:FindFirstChild("PlayerGui")
+                    local carMinigameUi = playerGui:FindFirstChild("CarMinigame") or playerGui:FindFirstChild("MudroadsGui")
+                    
+                    if carMinigameUi then
+                        -- Khóa số mạng của người chơi luôn bằng 3 (Đóng băng mạng)
+                        if carMinigameUi:FindFirstChild("Lives") then
+                            carMinigameUi.Lives.Value = 3
+                        end
+                    end
+                end)
+            end
+        end)
+    end    
+})
+
+-- TÍNH NĂNG 2: Auto Farm Điểm (Score) / Tự động né cây và chướng ngại vật
+CarTab:AddToggle({
+    Name = "Tự động né vật cản (Auto Dodge)",
+    Default = false,
+    Callback = function(Value)
+        AutoDrive = Value
+        task.spawn(function()
+            while AutoDrive do
+                task.wait(0.1) -- Tốc độ quét vật cản
+                pcall(function()
+                    -- Quét các chướng ngại vật (Cây cối, bùn lầy, đá...) xuất hiện trên đường đi
+                    local workspace = game:GetService("Workspace")
+                    local minigameFolder = workspace:FindFirstChild("MudroadsMinigame")
+                    
+                    if minigameFolder then
+                        for _, obstacle in pairs(minigameFolder:GetChildren()) do
+                            -- Nếu vật cản ở quá gần xe, tự động kích hoạt Remote di chuyển xe sang làn khác
+                            if obstacle:IsA("Part") and obstacle.Name == "Obstacle" then
+                                local distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - obstacle.Position).Magnitude
+                                if distance < 15 then
+                                    -- Gửi tín hiệu giả lập bấm nút mũi tên Trái/Phải để né
+                                    game:GetService("ReplicatedStorage").Events.CarMove:FireServer("Left") 
+                                end
+                            end
+                        end
+                    end
+                end)
+            end
+        end)
+    end    
+})
+
+OrionLib:Init()
