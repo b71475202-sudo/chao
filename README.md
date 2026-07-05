@@ -1,0 +1,99 @@
+local Players = game:GetService("Players")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Thiết lập cấu hình quét và phản xạ
+local SCAN_INTERVAL = 0.02 -- Thời gian quét lại (giây)
+local CLICK_DURATION = 0.06 -- Thời gian nhấn giữ nút di chuyển
+
+-- Biến kiểm soát trạng thái tự động
+_G.AutoMudroads = true
+
+-- Hàm mô phỏng thao tác nhấn phím ảo trên Roblox
+local function pressKey(keyCode)
+    VirtualInputManager:SendKeyEvent(true, keyCode, false, game)
+    task.wait(CLICK_DURATION)
+    VirtualInputManager:SendKeyEvent(false, keyCode, false, game)
+end
+
+-- Tìm giao diện màn hình minigame Mudroads trong PlayerGui
+local function getMudroadsGui()
+    for _, gui in pairs(PlayerGui:GetChildren()) do
+        if gui:IsA("ScreenGui") and gui.Enabled then
+            local mainFrame = gui:FindFirstChild("Main") or gui:FindFirstChild("Game") or gui:FindFirstChild("Frame")
+            if mainFrame and mainFrame:FindFirstChild("Road") then
+                return mainFrame
+            end
+        end
+    end
+    return nil
+end
+
+-- Vòng lặp chính xử lý tránh chướng ngại vật
+task.spawn(function()
+    print("[Mudroads Script]: Bắt đầu chạy tự động.")
+    
+    while _G.AutoMudroads do
+        task.wait(SCAN_INTERVAL)
+        
+        local gameFrame = getMudroadsGui()
+        if not gameFrame then continue end
+        
+        local road = gameFrame:FindFirstChild("Road")
+        local jeep = gameFrame:FindFirstChild("Jeep") or gameFrame:FindFirstChild("Car")
+        if not road or not jeep then continue end
+        
+        -- Xác định vị trí (làn đường) hiện tại của xe Jeep
+        local currentLane = 2 -- 1: Trái, 2: Giữa, 3: Phải
+        local jeepX = jeep.Position.X.Scale
+        if jeepX < 0.4 then
+            currentLane = 1
+        elseif jeepX > 0.6 then
+            currentLane = 3
+        end
+        
+        -- Quét tìm các chướng ngại vật đang di chuyển xuống dưới
+        local obstacles = {}
+        for _, obj in pairs(road:GetChildren()) do
+            if obj.Name == "Obstacle" or obj.Name == "Tree" or obj.Name == "Rock" or obj.Name == "Boulder" then
+                local objY = obj.Position.Y.Scale
+                local objX = obj.Position.X.Scale
+                
+                -- Chỉ quét các vật cản đang ở gần và sắp va chạm với xe (Trục Y)
+                if objY > 0.4 and objY < 0.85 then
+                    local obstacleLane = 2
+                    if objX < 0.4 then
+                        obstacleLane = 1
+                    elseif objX > 0.6 then
+                        obstacleLane = 3
+                    end
+                    obstacles[obstacleLane] = true
+                end
+            end
+        end
+        
+        -- Xử lý thuật toán né tránh dựa trên làn đường bị chặn (Đã sửa lỗi chỉ mục)
+        if obstacles[currentLane] then
+            if currentLane == 2 then
+                -- Nếu đang ở làn giữa mà bị chặn, ưu tiên né sang bên trống
+                if not obstacles[1] then
+                    pressKey(Enum.KeyCode.A) -- Né sang Trái
+                elseif not obstacles[3] then
+                    pressKey(Enum.KeyCode.D) -- Né sang Phải
+                end
+            elseif currentLane == 1 then
+                -- Nếu ở làn trái bị chặn, lập tức né vào giữa
+                if not obstacles[2] then
+                    pressKey(Enum.KeyCode.D)
+                end
+            elseif currentLane == 3 then
+                -- Nếu ở làn phải bị chặn, lập tức né vào giữa
+                if not obstacles[2] then
+                    pressKey(Enum.KeyCode.A)
+                end
+            end
+        end
+    end
+    print("[Mudroads Script]: Đã dừng chạy tự động.")
+end)
