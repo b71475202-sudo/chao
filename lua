@@ -1,84 +1,62 @@
-local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+-- Chuỗi nốt nhạc của bạn
+local music_sheet = {
+    -- Đoạn 1
+    "[fh]", "j", "z", "[dg]", "j", "l", "[sf]", "h", "k", "[ad]", "f", "h",
+    "[fh]", "j", "z", "[dg]", "j", "l", "[sf]", "h", "k", "s", "d", "f", "g",
+    -- Đoạn 2
+    "[sf]", "h", "k", "x", "[ad]", "f", "h", "z", "[ps]", "f", "h", "l", "[ad]", "f", "h", "k",
+    "[sf]", "h", "k", "x", "[ad]", "f", "h", "z", "[ps]", "f", "h", "l", "j", "k", "l", "z",
+    -- Đoạn 3
+    "[fh]", "j", "z", "[dg]", "j", "l", "[sf]", "h", "k", "[ad]", "f", "h",
+    "[fh]", "j", "z", "[dg]", "j", "l", "[sf]", "h", "k", "[ad]", "f", "h"
+}
 
-local Window = Rayfield:CreateWindow({
-   Name = "we your",
-   LoadingTitle = "RayField UI",
-   LoadingSubtitle = "By your name",
-   ConfigurationSaving = {
-      Enabled = true,
-      Folder = "MyRayField", -- Tên thư mục lưu config
-      FileName = "conFig"    -- Tên file config
-   },
-   Discord = {
-      Enabled = false,
-      Invite = "noinvitelink", -- Link Discord nếu có
-      RememberJoins = true
-   },
-   KeySystem = false, -- Đổi thành true nếu muốn dùng key
-   KeySettings = {
-      Title = "Untitled",
-      Subtitle = "Key System",
-      Note = "No method of obtaining the key is provided",
-      FileName = "Key",
-      SaveKey = true,
-      GrabKeyFromUrl = false,
-      Key = {"Hello"}
-   }
-})
-local  LINK_NHAC = "https://githubusercontent.com"
-local TOC_DO = 0.1 -- Thời gian trễ giữa các nốt (giây)
+-- Hàm phụ trợ để giả lập bấm phím (Tùy thuộc vào phần mềm bạn dùng, hàm này có thể đổi tên)
+-- Mặc định ở đây dùng hàm mô phỏng phổ biến: PressKey và ReleaseKey
+local function press_single_key(key)
+    KeyPress(key)
+    Sleep(50) -- Giữ phím 50ms
+    ReleaseKey(key)
+end
 
-local VirtualInputManager = game:GetService("VirtualInputManager")
-local function bamPhim(chuCai)
-    local keyCode
-    pcall(function() keyCode = Enum.KeyCode[string.upper(chuCai)] end)
-    if keyCode then
-        if keypress and keyrelease then
-            keypress(keyCode.Value)
-            task.wait(0.01)
-            keyrelease(keyCode.Value)
+-- Hàm chạy toàn bộ bản nhạc
+local function play_music()
+    Sleep(5000) -- Chờ 5 giây để bạn chuyển sang cửa sổ game/ứng dụng
+    
+    for _, note in ipairs(music_sheet) do
+        -- Kiểm tra nếu là hợp âm bấm cùng lúc (Ví dụ: "[fh]")
+        if string.sub(note, 1, 1) == "[" and string.sub(note, -1) == "]" then
+            -- Bỏ dấu ngoặc vuông để lấy các ký tự bên trong
+            local keys_str = string.sub(note, 2, -2)
+            local keys = {}
+            
+            -- Tách từng chữ cái ra
+            for i = 1, #keys_str do
+                table.insert(keys, string.sub(keys_str, i, i))
+            end
+            
+            -- Nhấn đồng thời tất cả các phím xuống
+            for _, key in ipairs(keys) do
+                KeyDown(key)
+            end
+            
+            Sleep(50) -- Giữ các phím cùng lúc trong 50ms
+            
+            -- Thả đồng thời tất cả các phím ra
+            for _, key in ipairs(keys) do
+                KeyUp(key)
+            end
+            
         else
-            VirtualInputManager:SendKeyEvent(true, keyCode, false, game)
-            task.wait(0.01)
-            VirtualInputManager:SendKeyEvent(false, keyCode, false, game)
+            -- Nếu là nốt đơn lẻ thông thường
+            press_single_key(note)
         end
+        
+        -- Khoảng nghỉ giữa các nốt (Tốc độ nhạc). Đơn vị là mili-giây (ms).
+        -- 200ms = 0.2 giây. Muốn nhạc nhanh hơn thì giảm số này xuống.
+        Sleep(200) 
     end
 end
 
-print("Dang tai bai hat tu GitHub...")
-local success, sheetNhac = pcall(function() return game:HttpGet(https://"www.google.com/search?q=tr%C6%B0%E1%BB%9Bc+khi+em+t%E1%BB%93n+t%E1%BA%A1i+piano&sca_esv=ee96f3d42c6f5c08&biw=411&sxsrf=APpeQnse1PFMO5fKpZkbhr4ZhrwoNoLYyQ%3A1783324041247&ei=iV1Lap7UDoiJvr0P0d3qoAw&bih=779&oq=tr%C6%B0%E1%BB%9Bc+khi+em+t%E1%BB%93n+t%E1%BA%A1i+piano&gs_lp=EhNtb2JpbGUtZ3dzLXdpei1zZXJwIiF0csaw4bubYyBraGkgZW0gdOG7k24gdOG6oWkgcGlhbm8yBRAAGIAEMgUQABiABDIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgAQyBhAAGBYYHjIGEAAYFhgeSK8iUABYxR1wAHgBkAEAmAG6AqABkAuqAQcwLjQuMi4xuAEDyAEA-AEBmAIHoAKMDMICChAAGIAEGEMYigXCAgoQLhiABBhDGIoFwgIFEC4YgASYAwCSBwcwLjQuMi4xoAeBLrIHBzAuNC4yLjG4B4wMwgcFMy02LjHIB3iACAA&sclient=mobile-gws-wiz-serp#fpstate=ive&vld=cid:a3c681d1,vid:jtFsZRHUyPE,st:0") end)
-
-if not success or not sheetNhac then
-    warn("Loi: Khong the tai du lieu. Hay dam bao ban dang dung link HTTPS da ma hoa!")
-    return
-end
-
-print("Tai thanh cong! Ban co 3 giay de click chon cay dan Piano...")
-task.wait(3)
-
-local i = 1
-while i <= #sheetNhac do
-    local kyTu = sheetNhac:sub(i, i)
-    
-    if kyTu == "[" then
-        local hopAm = ""
-        i = i + 1
-        while i <= #sheetNhac do
-            local kyTuTiepTheo = sheetNhac:sub(i, i)
-            if kyTuTiepTheo == "]" then break end
-            hopAm = hopAm .. kyTuTiepTheo
-            i = i + 1
-        end
-        for notTrongHopAm in hopAm:gmatch(".") do
-            task.spawn(bamPhim, notTrongHopAm)
-        end
-    elseif kyTu:match("%s") or kyTu == "|" or kyTu == "-" then
-        task.wait(TOC_DO)
-    else
-        bamPhim(kyTu)
-    end
-    
-    task.wait(TOC_DO)
-    i = i + 1
-end
-print("Da tu dong danh xong bai hat!")
+-- Kích hoạt chạy bot
+play_music()
