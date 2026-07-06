@@ -1,0 +1,188 @@
+-- Tạo Giao diện UI Auto Piano
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local UrlInput = Instance.new("TextBox")
+local PlayBtn = Instance.new("TextButton")
+local StopBtn = Instance.new("TextButton")
+local Status = Instance.new("TextLabel")
+local DelayInput = Instance.new("TextBox")
+local DelayTitle = Instance.new("TextLabel")
+
+ScreenGui.Name = "PianoAutoplayer"
+ScreenGui.Parent = game:GetService("CoreGui") or game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+MainFrame.BorderSizePixel = 0
+MainFrame.Position = UDim2.new(0.35, 0, 0.3, 0)
+MainFrame.Size = UDim2.new(0, 350, 0, 250)
+MainFrame.Active = true
+MainFrame.Draggable = true -- Có thể kéo di chuyển menu
+
+Title.Name = "Title"
+Title.Parent = MainFrame
+Title.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
+Title.BorderSizePixel = 0
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Font = Enum.Font.SourceSansBold
+Title.Text = "ROBLOX AUTO PIANO PLAYER"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 18
+
+UrlInput.Name = "UrlInput"
+UrlInput.Parent = MainFrame
+UrlInput.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
+UrlInput.BorderSizePixel = 0
+UrlInput.Position = UDim2.new(0.05, 0, 0.22, 0)
+UrlInput.Size = UDim2.new(0.9, 0, 0, 35)
+UrlInput.Font = Enum.Font.SourceSans
+UrlInput.PlaceholderText = "Dán link raw chứa nốt nhạc tại đây..."
+UrlInput.Text = ""
+UrlInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+UrlInput.TextSize = 14
+
+DelayTitle.Name = "DelayTitle"
+DelayTitle.Parent = MainFrame
+DelayTitle.BackgroundTransparency = 1
+DelayTitle.Position = UDim2.new(0.05, 0, 0.42, 0)
+DelayTitle.Size = UDim2.new(0.4, 0, 0, 30)
+DelayTitle.Font = Enum.Font.SourceSans
+DelayTitle.Text = "Tốc độ trễ (giây):"
+DelayTitle.TextColor3 = Color3.fromRGB(200, 200, 200)
+DelayTitle.TextSize = 14
+DelayTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+DelayInput.Name = "DelayInput"
+DelayInput.Parent = MainFrame
+DelayInput.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
+DelayInput.BorderSizePixel = 0
+DelayInput.Position = UDim2.new(0.45, 0, 0.42, 0)
+DelayInput.Size = UDim2.new(0.5, 0, 0, 30)
+DelayInput.Font = Enum.Font.SourceSans
+DelayInput.Text = "0.1"
+DelayInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+DelayInput.TextSize = 14
+
+PlayBtn.Name = "PlayBtn"
+PlayBtn.Parent = MainFrame
+PlayBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
+PlayBtn.BorderSizePixel = 0
+PlayBtn.Position = UDim2.new(0.05, 0, 0.6, 0)
+PlayBtn.Size = UDim2.new(0.42, 0, 0, 40)
+PlayBtn.Font = Enum.Font.SourceSansBold
+PlayBtn.Text = "PHÁT NHẠC"
+PlayBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+PlayBtn.TextSize = 16
+
+StopBtn.Name = "StopBtn"
+StopBtn.Parent = MainFrame
+StopBtn.BackgroundColor3 = Color3.fromRGB(231, 76, 60)
+StopBtn.BorderSizePixel = 0
+StopBtn.Position = UDim2.new(0.53, 0, 0.6, 0)
+StopBtn.Size = UDim2.new(0.42, 0, 0, 40)
+StopBtn.Font = Enum.Font.SourceSansBold
+StopBtn.Text = "DỪNG"
+StopBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+StopBtn.TextSize = 16
+
+Status.Name = "Status"
+Status.Parent = MainFrame
+Status.BackgroundTransparency = 1
+Status.Position = UDim2.new(0, 0, 0.82, 0)
+Status.Size = UDim2.new(1, 0, 0, 30)
+Status.Font = Enum.Font.SourceSansItalic
+Status.Text = "Trạng thái: Sẵn sàng"
+Status.TextColor3 = Color3.fromRGB(230, 230, 230)
+Status.TextSize = 14
+
+-- Biến kiểm soát trạng thái phát nhạc
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local isPlaying = false
+
+-- Hàm mô phỏng phím bấm vật lý
+local function tapKey(key)
+	local keyCode
+	pcall(function()
+		keyCode = Enum.KeyCode[key]
+	end)
+	if keyCode then
+		VirtualInputManager:SendKeyEvent(true, keyCode, false, game)
+		task.wait(0.01)
+		VirtualInputManager:SendKeyEvent(false, keyCode, false, game)
+	end
+end
+
+-- Xử lý nút Phát nhạc
+PlayBtn.MouseButton1Click:Connect(function()
+	if isPlaying then return end
+	
+	local url = UrlInput.Text
+	if url == "" then
+		Status.Text = "Lỗi: Vui lòng nhập link sheet nhạc!"
+		return
+	end
+	
+	Status.Text = "Đang tải bài hát từ link..."
+	
+	-- Tải dữ liệu từ Link
+	local success, musicSheet = pcall(function()
+		return game:HttpGet(url)
+	end)
+	
+	if not success or not musicSheet then
+		Status.Text = "Lỗi: Không thể lấy dữ liệu từ link này!"
+		return
+	end
+	
+	isPlaying = true
+	Status.Text = "Đang phát nhạc tự động..."
+	
+	-- Phân tích và xử lý chuỗi nốt nhạc
+	task.spawn(function()
+		local i = 1
+		local delayTime = tonumber(DelayInput.Text) or 0.1
+		
+		while i <= #musicSheet and isPlaying do
+			local char = musicSheet:sub(i, i)
+			
+			if char == "[" then
+				-- Xử lý hợp âm đánh cùng lúc ví dụ: [tup]
+				local chord = ""
+				i = i + 1
+				while i <= #musicSheet do
+					local nextChar = musicSheet:sub(i, i)
+					if nextChar == "]" then break end
+					chord = chord .. nextChar
+					i = i + 1
+				end
+				-- Nhấn tất cả các phím trong hợp âm cùng một lúc
+				for c in chord:gmatch(".") do
+					if isPlaying then
+						task.spawn(tapKey, c)
+					end
+				end
+			elseif char:match("%s") or char == "|" or char == "-" then
+				-- Gặp khoảng trắng hoặc ký tự phân cách thì nghỉ ngắn
+				task.wait(delayTime)
+			else
+				-- Gặp nốt đơn thông thường
+				tapKey(char)
+			end
+			
+			task.wait(delayTime)
+			i = i + 1
+		end
+		
+		isPlaying = false
+		Status.Text = "Trạng thái: Đã phát xong hoặc đã dừng!"
+	end)
+end)
+
+-- Xử lý nút Dừng
+StopBtn.MouseButton1Click:Connect(function()
+	isPlaying = false
+	Status.Text = "Trạng thái: Đã dừng phát!"
+end)
