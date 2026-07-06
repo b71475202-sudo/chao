@@ -1,0 +1,81 @@
+-- Bảng quy đổi ký tự nốt nhạc sang tọa độ (X, Y) trên màn hình điện thoại của bạn
+-- LƯU Ý: Hãy thay đổi các số X, Y bên dưới cho đúng vị trí nút đàn trong game của bạn
+local key_positions = {
+    ["s"] = {x = 200, y = 500},
+    ["d"] = {x = 350, y = 500},
+    ["f"] = {x = 500, y = 500},
+    ["g"] = {x = 650, y = 500},
+    ["h"] = {x = 800, y = 500},
+    ["j"] = {x = 950, y = 500},
+    ["k"] = {x = 1100, y = 500},
+    ["l"] = {x = 1250, y = 500},
+    ["z"] = {x = 500, y = 700},
+    ["x"] = {x = 650, y = 700},
+    ["a"] = {x = 200, y = 300},
+    ["p"] = {x = 800, y = 300},
+}
+
+local music_sheet = {
+    -- Đoạn 1
+    "[fh]", "j", "z", "[dg]", "j", "l", "[sf]", "h", "k", "[ad]", "f", "h",
+    "[fh]", "j", "z", "[dg]", "j", "l", "[sf]", "h", "k", "s", "d", "f", "g",
+    -- Đoạn 2
+    "[sf]", "h", "k", "x", "[ad]", "f", "h", "z", "[ps]", "f", "h", "l", "[ad]", "f", "h", "k",
+    "[sf]", "h", "k", "x", "[ad]", "f", "h", "z", "[ps]", "f", "h", "l", "j", "k", "l", "z",
+    -- Đoạn 3
+    "[fh]", "j", "z", "[dg]", "j", "l", "[sf]", "h", "k", "[ad]", "f", "h",
+    "[fh]", "j", "z", "[dg]", "j", "l", "[sf]", "h", "k", "[ad]", "f", "h"
+}
+
+-- Hàm thực hiện hành động chạm vào màn hình (Sử dụng API chung của AnkuLua / AutoClicker)
+local function mobile_tap(x, y)
+    click(Location(x, y))
+end
+
+-- Hàm thực hiện chạm nhiều điểm cùng lúc (Hợp âm)
+local function mobile_multi_tap(points)
+    -- Hầu hết các app macro mobile hỗ trợ chạm đa điểm qua danh sách Location
+    local locations = {}
+    for _, pt in ipairs(points) do
+        table.insert(locations, Location(pt.x, pt.y))
+    end
+    -- Chạm đồng thời các điểm
+    click(locations) 
+end
+
+local function play_music()
+    toast("Bot nhạc sẽ chạy sau 3 giây...")
+    wait(3) -- Chờ 3 giây để bạn chuẩn bị
+
+    for _, note in ipairs(music_sheet) do
+        -- Xử lý hợp âm bấm cùng lúc, ví dụ "[fh]"
+        if string.sub(note, 1, 1) == "[" and string.sub(note, -1) == "]" then
+            local keys_str = string.sub(note, 2, -2)
+            local target_points = {}
+
+            for i = 1, #keys_str do
+                local char = string.sub(keys_str, i, i)
+                if key_positions[char] then
+                    table.insert(target_points, key_positions[char])
+                end
+            end
+
+            if #target_points > 0 then
+                mobile_multi_tap(target_points)
+            end
+
+        else
+            -- Xử lý nốt đơn lẻ
+            if key_positions[note] then
+                mobile_tap(key_positions[note].x, key_positions[note].y)
+            end
+        end
+
+        -- Khoảng nghỉ giữa các nốt (Tốc độ nhạc - Đơn vị: giây)
+        -- 0.2 tương đương với 200ms
+        wait(0.2)
+    end
+    toast("Đã đánh xong bài nhạc!")
+end
+
+play_music()
