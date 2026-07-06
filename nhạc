@@ -1,8 +1,6 @@
--- CẤU HÌNH SCRIPT (VIẾT BẰNG LUA)
-local LINK_NHAC = "https://pastebin.com" -- Thay link chứa nốt nhạc của bạn vào đây
+local LINK_NHAC = "https://githubusercontent.com"
 local TOC_DO = 0.1 -- Thời gian trễ giữa các nốt (giây)
 
--- Khởi tạo công cụ hệ thống
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local function bamPhim(chuCai)
     local keyCode
@@ -20,25 +18,22 @@ local function bamPhim(chuCai)
     end
 end
 
--- Tải dữ liệu từ link nhạc bạn đã gắn
-print("Dang tai bai hat...")
+print("Dang tai bai hat tu GitHub...")
 local success, sheetNhac = pcall(function() return game:HttpGet(LINK_NHAC) end)
 
 if not success or not sheetNhac then
-    warn("Loi: Khong the tai du lieu tu link nay!")
+    warn("Loi: Khong the tai du lieu. Hay dam bao ban dang dung link HTTPS da ma hoa!")
     return
 end
 
-print("Bat dau tu dong danh piano sau 3 giay...")
-task.wait(3) -- Cho bạn 3 giây để bấm chuột chọn cây đàn trong game
+print("Tai thanh cong! Ban co 3 giay de click chon cay dan Piano...")
+task.wait(3)
 
--- Vòng lặp đọc dữ liệu Lua để tách nốt
 local i = 1
 while i <= #sheetNhac do
     local kyTu = sheetNhac:sub(i, i)
     
     if kyTu == "[" then
-        -- Xu ly hop am danh cung luc (vi du: [tup])
         local hopAm = ""
         i = i + 1
         while i <= #sheetNhac do
@@ -47,8 +42,8 @@ while i <= #sheetNhac do
             hopAm = hopAm .. kyTuTiepTheo
             i = i + 1
         end
-        for not trong hopAm:gmatch(".") do
-            task.spawn(bamPhim, not)
+        for notTrongHopAm in hopAm:gmatch(".") do
+            task.spawn(bamPhim, notTrongHopAm)
         end
     elseif kyTu:match("%s") or kyTu == "|" or kyTu == "-" then
         task.wait(TOC_DO)
@@ -59,4 +54,4 @@ while i <= #sheetNhac do
     task.wait(TOC_DO)
     i = i + 1
 end
-print("Da danh xong bai hat!")
+print("Da tu dong danh xong bai hat!")
