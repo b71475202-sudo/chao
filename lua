@@ -25,7 +25,7 @@ local Window = Rayfield:CreateWindow({
       Key = {"Hello"}
    }
 })
-loca  LINK_NHAC = "https://githubusercontent.com"
+local  LINK_NHAC = "https://githubusercontent.com"
 local TOC_DO = 0.1 -- Thời gian trễ giữa các nốt (giây)
 
 local VirtualInputManager = game:GetService("VirtualInputManager")
@@ -46,7 +46,7 @@ local function bamPhim(chuCai)
 end
 
 print("Dang tai bai hat tu GitHub...")
-local success, sheetNhac = pcall(function() return game:HttpGet(https://www.google.com/search?q=tr%C6%B0%E1%BB%9Bc+khi+em+t%E1%BB%93n+t%E1%BA%A1i+piano&sca_esv=ee96f3d42c6f5c08&biw=411&sxsrf=APpeQnse1PFMO5fKpZkbhr4ZhrwoNoLYyQ%3A1783324041247&ei=iV1Lap7UDoiJvr0P0d3qoAw&bih=779&oq=tr%C6%B0%E1%BB%9Bc+khi+em+t%E1%BB%93n+t%E1%BA%A1i+piano&gs_lp=EhNtb2JpbGUtZ3dzLXdpei1zZXJwIiF0csaw4bubYyBraGkgZW0gdOG7k24gdOG6oWkgcGlhbm8yBRAAGIAEMgUQABiABDIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgAQyBhAAGBYYHjIGEAAYFhgeSK8iUABYxR1wAHgBkAEAmAG6AqABkAuqAQcwLjQuMi4xuAEDyAEA-AEBmAIHoAKMDMICChAAGIAEGEMYigXCAgoQLhiABBhDGIoFwgIFEC4YgASYAwCSBwcwLjQuMi4xoAeBLrIHBzAuNC4yLjG4B4wMwgcFMy02LjHIB3iACAA&sclient=mobile-gws-wiz-serp#fpstate=ive&vld=cid:a3c681d1,vid:jtFsZRHUyPE,st:0) end)
+local success, sheetNhac = pcall(function() return game:HttpGet(https://"www.google.com/search?q=tr%C6%B0%E1%BB%9Bc+khi+em+t%E1%BB%93n+t%E1%BA%A1i+piano&sca_esv=ee96f3d42c6f5c08&biw=411&sxsrf=APpeQnse1PFMO5fKpZkbhr4ZhrwoNoLYyQ%3A1783324041247&ei=iV1Lap7UDoiJvr0P0d3qoAw&bih=779&oq=tr%C6%B0%E1%BB%9Bc+khi+em+t%E1%BB%93n+t%E1%BA%A1i+piano&gs_lp=EhNtb2JpbGUtZ3dzLXdpei1zZXJwIiF0csaw4bubYyBraGkgZW0gdOG7k24gdOG6oWkgcGlhbm8yBRAAGIAEMgUQABiABDIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgAQyBhAAGBYYHjIGEAAYFhgeSK8iUABYxR1wAHgBkAEAmAG6AqABkAuqAQcwLjQuMi4xuAEDyAEA-AEBmAIHoAKMDMICChAAGIAEGEMYigXCAgoQLhiABBhDGIoFwgIFEC4YgASYAwCSBwcwLjQuMi4xoAeBLrIHBzAuNC4yLjG4B4wMwgcFMy02LjHIB3iACAA&sclient=mobile-gws-wiz-serp#fpstate=ive&vld=cid:a3c681d1,vid:jtFsZRHUyPE,st:0") end)
 
 if not success or not sheetNhac then
     warn("Loi: Khong the tai du lieu. Hay dam bao ban dang dung link HTTPS da ma hoa!")
